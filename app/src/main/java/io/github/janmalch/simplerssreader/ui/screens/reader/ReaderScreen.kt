@@ -67,6 +67,7 @@ import coil3.compose.AsyncImage
 import io.github.janmalch.simplerssreader.R
 import io.github.janmalch.simplerssreader.core.FeedItem
 import io.github.janmalch.simplerssreader.core.FeedItemId
+import io.github.janmalch.simplerssreader.ui.SuppressLinks
 import kotlinx.serialization.Serializable
 import java.text.DateFormat
 
@@ -322,7 +323,10 @@ private fun ItemPager(
                     .padding(contentPadding),
             ) {
                 Text(
-                    text = item.title,
+                    text = AnnotatedString.fromHtml(
+                        item.title,
+                        linkInteractionListener = SuppressLinks,
+                    ),
                     style = MaterialTheme.typography.headlineSmall,
                     modifier = Modifier.padding(horizontal = 24.dp),
                 )
