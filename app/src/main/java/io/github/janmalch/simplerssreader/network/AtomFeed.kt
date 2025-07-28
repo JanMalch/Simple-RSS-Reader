@@ -4,9 +4,7 @@ import io.ktor.http.Url
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import nl.adaptivity.xmlutil.serialization.XmlElement
-import nl.adaptivity.xmlutil.serialization.XmlNamespaceDeclSpecs
 import nl.adaptivity.xmlutil.serialization.XmlSerialName
-import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
 // https://github.com/pdvrieze/xmlutil/issues/229#issuecomment-2243527380
@@ -108,6 +106,7 @@ data class AtomFeed(
         val thumbnail: Thumbnail? = null,
     ) {
         @Serializable
+        @XmlSerialName("thumbnail", XmlnsMedia, "media")
         data class Thumbnail(
             @SerialName("url")
             val url: Url? = null,
