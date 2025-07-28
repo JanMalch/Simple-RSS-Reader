@@ -38,19 +38,29 @@ class UpdateWorker @AssistedInject constructor(
         try {
             Timber.tag(TAG).d("Starting to update feeds from worker.")
             itemRepository.update()
-            val unreadCount = itemRepository.countUnread()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Timber.tag(TAG).e(
+                e,
+                "Failed to update feeds. Attempt #%d.",
+                runAttemptCount
+            )
+            return if (runAttemptCount < 3) Result.retry() else Result.failure()
+        }
+        val unreadCount = itemRepository.countUnread()
+        Timber.tag(TAG).d("Counted %d unread feed items after updating.", unreadCount)
+        try {
             if (unreadCount > 0) {
                 postNotification(unreadCount)
             }
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            Timber.tag(TAG).e(
+            Timber.tag(TAG).w(
                 e,
-                "Failed to update feeds. Attempt #%d",
-                runAttemptCount
+                "Failed to post notification.",
             )
-            return if (runAttemptCount < 3) Result.retry() else Result.failure()
         }
         return Result.success()
     }
