@@ -1,5 +1,8 @@
 package io.github.janmalch.simplerssreader.ui
 
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
@@ -30,6 +33,21 @@ fun AppUi() {
                 rememberSavedStateNavEntryDecorator(),
                 rememberViewModelStoreNavEntryDecorator(),
             ),
+            transitionSpec = {
+                // Slide in from right when navigating forward
+                slideInHorizontally(initialOffsetX = { it }) togetherWith
+                        slideOutHorizontally(targetOffsetX = { -it })
+            },
+            popTransitionSpec = {
+                // Slide in from left when navigating back
+                slideInHorizontally(initialOffsetX = { -it }) togetherWith
+                        slideOutHorizontally(targetOffsetX = { it })
+            },
+            predictivePopTransitionSpec = {
+                // Slide in from left when navigating back
+                slideInHorizontally(initialOffsetX = { -it }) togetherWith
+                        slideOutHorizontally(targetOffsetX = { it })
+            },
             entryProvider = { key ->
                 when (key) {
                     is MainScreen -> NavEntry(key) {
