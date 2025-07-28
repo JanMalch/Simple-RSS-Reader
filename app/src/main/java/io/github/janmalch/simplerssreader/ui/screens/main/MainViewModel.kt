@@ -5,7 +5,6 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.cachedIn
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.janmalch.simplerssreader.core.FeedItemRepository
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -45,15 +44,13 @@ class MainViewModel @Inject constructor(
     }
 
     fun refresh() {
-        viewModelScope.launch {
+        viewModelScope.launch(CoroutineExceptionHandler { _, throwable ->
+            Timber.e(throwable, "Unexpected error while refreshing all feeds.")
+        }) {
             _isRefreshing.value = true
             yield()
             try {
                 itemsRepository.update()
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                Timber.e(e, "Error while refreshing all feeds.")
             } finally {
                 _isRefreshing.value = false
             }
