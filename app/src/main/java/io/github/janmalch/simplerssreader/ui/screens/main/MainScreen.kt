@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DoneAll
@@ -36,7 +35,6 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -56,7 +54,6 @@ import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemContentType
-import androidx.paging.compose.itemKey
 import coil3.compose.AsyncImage
 import com.google.android.gms.oss.licenses.OssLicensesMenuActivity
 import io.github.janmalch.shed.Shed
@@ -178,12 +175,7 @@ fun MainScreen(
                 .fillMaxSize()
                 .padding(innerPadding),
         ) {
-            val lazyListState = rememberLazyListState()
-            LaunchedEffect(pagingItems.itemCount) {
-                lazyListState.requestScrollToItem(0)
-            }
             LazyColumn(
-                state = lazyListState,
                 modifier = Modifier.fillMaxSize()
             ) {
                 if (pagingItems.itemCount == 0 && pagingItems.loadState.isIdle) {
@@ -212,7 +204,8 @@ fun MainScreen(
                 }
                 items(
                     count = pagingItems.itemCount,
-                    key = pagingItems.itemKey { it.id.id },
+                    // not specifying a key, so that scroll position doesn't
+                    // stick to an item, when items change
                     contentType = pagingItems.itemContentType { "FeedItem" },
                 ) { index ->
                     val item = pagingItems[index] ?: return@items
@@ -248,7 +241,9 @@ fun MainScreen(
                                     .orEmpty()
                             )
                         },
-                        modifier = Modifier.clickable { onItemClick(item.id, isOnlyUnreadVisible) }
+                        modifier = Modifier
+                            .animateItem()
+                            .clickable { onItemClick(item.id, isOnlyUnreadVisible) }
                     )
                     HorizontalDivider()
                 }
