@@ -9,12 +9,12 @@ import io.github.janmalch.simplerssreader.network.AtomFeed
 import io.github.janmalch.simplerssreader.network.RssFeed
 import io.ktor.client.HttpClient
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.joinAll
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -105,18 +105,18 @@ class AndroidFeedItemRepository @Inject constructor(
                 pagingData.map { it.toModel() }
             }
 
-    override suspend fun update() = crudMutex.withLock {
+    override suspend fun update(): Unit = crudMutex.withLock {
         val feeds = feeds.watchSources().first()
         if (feeds.isEmpty()) {
             return
         }
         withContext(defaultDispatcher) {
-            supervisorScope {
+            coroutineScope {
                 feeds.map {
-                    launch {
+                    async {
                         update(it)
                     }
-                }.joinAll()
+                }.awaitAll()
             }
         }
     }
