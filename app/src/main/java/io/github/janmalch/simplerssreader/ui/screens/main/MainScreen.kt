@@ -54,7 +54,6 @@ import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemContentType
-import androidx.paging.compose.itemKey
 import coil3.compose.AsyncImage
 import com.google.android.gms.oss.licenses.OssLicensesMenuActivity
 import io.github.janmalch.shed.Shed
@@ -205,7 +204,8 @@ fun MainScreen(
                 }
                 items(
                     count = pagingItems.itemCount,
-                    key = pagingItems.itemKey { it.id.id },
+                    // not specifying a key, so that scroll position doesn't
+                    // stick to an item, when items change
                     contentType = pagingItems.itemContentType { "FeedItem" },
                 ) { index ->
                     val item = pagingItems[index] ?: return@items
@@ -241,7 +241,9 @@ fun MainScreen(
                                     .orEmpty()
                             )
                         },
-                        modifier = Modifier.clickable { onItemClick(item.id, isOnlyUnreadVisible) }
+                        modifier = Modifier
+                            .animateItem()
+                            .clickable { onItemClick(item.id, isOnlyUnreadVisible) }
                     )
                     HorizontalDivider()
                 }
