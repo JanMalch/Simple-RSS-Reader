@@ -44,7 +44,7 @@ class UpdateWorker @AssistedInject constructor(
             Timber.tag(TAG).e(
                 e,
                 "Failed to update feeds. Attempt #%d.",
-                runAttemptCount
+                runAttemptCount + 1
             )
             return if (runAttemptCount < 3) Result.retry() else Result.failure()
         }
@@ -52,6 +52,7 @@ class UpdateWorker @AssistedInject constructor(
         Timber.tag(TAG).d("Counted %d unread feed items after updating.", unreadCount)
         try {
             if (unreadCount > 0) {
+                createNotificationChannel()
                 postNotification(unreadCount)
             }
         } catch (e: CancellationException) {
@@ -87,15 +88,15 @@ class UpdateWorker @AssistedInject constructor(
 
     private fun createNotificationChannel() {
         val ctx = applicationContext
-        // Create the NotificationChannel, but only on API 26+ because
-        // the NotificationChannel class is not in the Support Library.
         val name = ctx.getString(R.string.app_name)
         val descriptionText = ctx.getString(R.string.channel_description)
-        val importance = NotificationManager.IMPORTANCE_DEFAULT
-        val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
+        val channel = NotificationChannel(
+            CHANNEL_ID,
+            name,
+            NotificationManager.IMPORTANCE_DEFAULT
+        ).apply {
             description = descriptionText
         }
-        // Register the channel with the system.
         val notificationManager: NotificationManager =
             ctx.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.createNotificationChannel(channel)
