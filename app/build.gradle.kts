@@ -116,6 +116,8 @@ dependencies {
 
     implementation(libs.androidx.work)
 
+    implementation(libs.accompanist.permissions)
+
     implementation(libs.hilt.android)
     implementation(libs.hilt.compose)
     implementation(libs.hilt.work)

@@ -37,8 +37,9 @@
     <string name="open_youtube_short">Open YouTube short</string>
     <string name="open_youtube_video">Open YouTube video</string>
     <string name="notification_title">Unread items in your feed</string>
-    <string name="notification_text">There are %1$d unread items on your feed.</string>
+    <string name="notification_text">There are %1$d unread items in your feed.</string>
     <string name="channel_description">Notifies of unread items.</string>
     <string name="nothing_here">There seems to be nothing here.</string>
     <string name="unexpected_error">An unexpected error has occurred.</string>
+    <string name="grant_permissions">Grant missing permissions</string>
 </resources>

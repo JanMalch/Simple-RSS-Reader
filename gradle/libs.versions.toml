@@ -32,6 +32,7 @@ shed = "0.4.0"
 google-oss = "17.2.1"
 google-oss-plugin = "0.10.6"
 androidHiltCompiler = "1.2.0"
+permissions = "0.37.3"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -82,6 +83,7 @@ coil-svg = { module = "io.coil-kt.coil3:coil-svg", version.ref = "coil" }
 shed = { module = "io.github.janmalch:shed", version.ref = "shed" }
 google-oss-licenses = { group = "com.google.android.gms", name = "play-services-oss-licenses", version.ref = "google-oss" }
 google-oss-licenses-plugin = { group = "com.google.android.gms", name = "oss-licenses-plugin", version.ref = "google-oss-plugin" }
+accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version.ref = "permissions" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
