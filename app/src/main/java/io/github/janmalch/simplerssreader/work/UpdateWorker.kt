@@ -3,7 +3,9 @@ package io.github.janmalch.simplerssreader.work
 import android.Manifest
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
@@ -17,6 +19,7 @@ import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import io.github.janmalch.simplerssreader.MainActivity
 import io.github.janmalch.simplerssreader.R
 import io.github.janmalch.simplerssreader.core.FeedItemRepository
 import timber.log.Timber
@@ -68,11 +71,21 @@ class UpdateWorker @AssistedInject constructor(
 
     private fun postNotification(unreadCount: Int) {
         val ctx = applicationContext
+        val intent = Intent(ctx, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+        val pendingIntent = PendingIntent.getActivity(
+            ctx,
+            0,
+            intent,
+            PendingIntent.FLAG_IMMUTABLE
+        )
         val builder = NotificationCompat.Builder(ctx, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_launcher_foreground) // FIXME
             .setContentTitle(ctx.getString(R.string.notification_title))
             .setContentText(ctx.getString(R.string.notification_text, unreadCount))
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setContentIntent(pendingIntent)
             .setAutoCancel(true)
         with(NotificationManagerCompat.from(ctx)) {
             if (ActivityCompat.checkSelfPermission(
