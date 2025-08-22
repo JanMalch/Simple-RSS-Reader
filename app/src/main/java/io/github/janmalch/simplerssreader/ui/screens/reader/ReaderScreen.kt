@@ -339,7 +339,7 @@ private fun ItemPager(
                 ContentDisplay(item.content)
             }
 
-            LaunchedEffect(Unit) {
+            LaunchedEffect(pagerState.settledPage) {
                 if (index == pagerState.settledPage) {
                     onMarkAsRead(item.id)
                 }
