@@ -49,7 +49,7 @@ class UpdateWorker @AssistedInject constructor(
                 "Failed to update feeds. Attempt #%d.",
                 runAttemptCount + 1
             )
-            return if (runAttemptCount < 3) Result.retry() else Result.failure()
+            if (runAttemptCount < 3) return Result.retry()
         }
         val unreadCount = itemRepository.countUnread()
         Timber.tag(TAG).d("Counted %d unread feed items after updating.", unreadCount)
@@ -66,7 +66,7 @@ class UpdateWorker @AssistedInject constructor(
                 "Failed to post notification.",
             )
         }
-        return Result.success()
+        return if (runAttemptCount <= 3) Result.success() else Result.failure()
     }
 
     private fun postNotification(unreadCount: Int) {
