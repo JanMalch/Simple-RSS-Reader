@@ -76,7 +76,7 @@ import java.text.DateFormat
 @Serializable
 data class ReaderScreen(
     val initialItem: FeedItemId,
-    val isOnlyUnreadVisible: Boolean,
+    val ids: List<FeedItemId>,
 ) : NavKey
 
 @Composable

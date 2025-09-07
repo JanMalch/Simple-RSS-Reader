@@ -11,6 +11,7 @@ import androidx.room.Query
 import io.github.janmalch.simplerssreader.core.FeedItemHint
 import io.github.janmalch.simplerssreader.core.FeedItemId
 import io.ktor.http.Url
+import kotlinx.coroutines.flow.Flow
 import kotlin.time.Instant
 import kotlin.uuid.Uuid
 
@@ -54,13 +55,13 @@ interface FeedItemDao {
     fun paginateUnread(source: Uuid): PagingSource<Int, FeedItemEntity>
 
     @Query("SELECT * FROM feed_item ORDER BY published DESC")
-    suspend fun findAll(): List<FeedItemEntity>
+    fun findAll(): Flow<List<FeedItemEntity>>
 
-    @Query("SELECT * FROM feed_item WHERE source = :source ORDER BY published DESC")
-    suspend fun findAll(source: Uuid): List<FeedItemEntity>
+    @Query("SELECT * FROM feed_item WHERE id IN (:ids) ORDER BY published DESC")
+    suspend fun findAll(ids: List<FeedItemId>): List<FeedItemEntity>
 
     @Query("SELECT * FROM feed_item WHERE isRead = 0 ORDER BY published DESC")
-    suspend fun findUnread(): List<FeedItemEntity>
+    fun findUnread(): Flow<List<FeedItemEntity>>
 
     @Query("SELECT * FROM feed_item WHERE isRead = 0 AND source = :source ORDER BY published DESC")
     suspend  fun findUnread(source: Uuid): List<FeedItemEntity>

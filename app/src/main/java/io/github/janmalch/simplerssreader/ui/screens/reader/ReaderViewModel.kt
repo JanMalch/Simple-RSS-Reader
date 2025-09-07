@@ -10,7 +10,6 @@ import io.github.janmalch.simplerssreader.core.FeedItem
 import io.github.janmalch.simplerssreader.core.FeedItemId
 import io.github.janmalch.simplerssreader.core.FeedItemRepository
 import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.catch
@@ -18,7 +17,6 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import kotlin.math.max
-import kotlin.time.Duration.Companion.seconds
 
 
 @HiltViewModel(assistedFactory = ReaderViewModel.Factory::class)
@@ -29,7 +27,7 @@ class ReaderViewModel @AssistedInject constructor(
 
 
     val uiState = suspend {
-        val items = itemRepository.findAll(onlyUnread = args.isOnlyUnreadVisible)
+        val items = itemRepository.findAll(ids = args.ids)
         val initialIndex = max(0, items.indexOfFirst { it.id == args.initialItem })
         UiState.Success(initialIndex, items)
     }.asFlow<UiState>()

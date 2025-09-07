@@ -52,11 +52,11 @@ fun AppUi() {
                 when (key) {
                     is MainScreen -> NavEntry(key) {
                         MainScreen(
-                            onItemClick = { item, isOnlyUnreadVisible ->
+                            onItemClick = { item, itemIds ->
                                 backStack.add(
                                     ReaderScreen(
                                         initialItem = item,
-                                        isOnlyUnreadVisible = isOnlyUnreadVisible,
+                                        ids = itemIds,
                                     )
                                 )
                             },

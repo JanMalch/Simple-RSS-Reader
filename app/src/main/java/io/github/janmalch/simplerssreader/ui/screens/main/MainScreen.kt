@@ -13,14 +13,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material.icons.outlined.VisibilityOff
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
@@ -36,7 +35,6 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -50,10 +48,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavKey
-import androidx.paging.LoadState
-import androidx.paging.compose.LazyPagingItems
-import androidx.paging.compose.collectAsLazyPagingItems
-import androidx.paging.compose.itemContentType
 import coil3.compose.AsyncImage
 import com.google.android.gms.oss.licenses.OssLicensesMenuActivity
 import io.github.janmalch.shed.Shed
@@ -65,7 +59,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data object MainScreen : NavKey
 
-private typealias OnItemClick = (item: FeedItemId, isOnlyUnreadVisible: Boolean) -> Unit
+private typealias OnItemClick = (item: FeedItemId, ids: List<FeedItemId>) -> Unit
 
 @Composable
 fun MainScreen(
@@ -74,12 +68,12 @@ fun MainScreen(
     modifier: Modifier = Modifier,
     viewModel: MainViewModel = hiltViewModel(),
 ) {
-    val pagingItems = viewModel.pagingItems.collectAsLazyPagingItems()
+    val feedItems by viewModel.feedItems.collectAsStateWithLifecycle()
     val isOnlyUnreadVisible by viewModel.isOnlyUnreadVisible.collectAsStateWithLifecycle()
     val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
     val context = LocalContext.current
     MainScreen(
-        pagingItems = pagingItems,
+        feedItems = feedItems,
         isOnlyUnreadVisible = isOnlyUnreadVisible,
         isRefreshing = isRefreshing,
         onRefresh = viewModel::refresh,
@@ -104,7 +98,7 @@ fun MainScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
-    pagingItems: LazyPagingItems<FeedItem>,
+    feedItems: List<FeedItem>?,
     isOnlyUnreadVisible: Boolean,
     isRefreshing: Boolean,
     onRefresh: () -> Unit,
@@ -152,7 +146,7 @@ fun MainScreen(
                     }
                 )
                 AnimatedVisibility(
-                    visible = pagingItems.loadState.refresh == LoadState.Loading,
+                    visible = feedItems == null,
                     label = "AnimatedVisibility:LinearProgressIndicator"
                 ) {
                     LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
@@ -178,7 +172,7 @@ fun MainScreen(
             LazyColumn(
                 modifier = Modifier.fillMaxSize()
             ) {
-                if (pagingItems.itemCount == 0 && pagingItems.loadState.isIdle) {
+                if (feedItems != null && feedItems.isEmpty()) {
                     item(
                         key = "NoItems",
                         contentType = "NoItems",
@@ -190,25 +184,11 @@ fun MainScreen(
                         )
                     }
                 }
-                if (pagingItems.loadState.hasError) {
-                    item(
-                        key = "Error",
-                        contentType = "Error",
-                    ) {
-                        ListItem(
-                            headlineContent = {
-                                Text(stringResource(R.string.unexpected_error))
-                            }
-                        )
-                    }
-                }
+                feedItems?.also {
                 items(
-                    count = pagingItems.itemCount,
-                    // not specifying a key, so that scroll position doesn't
-                    // stick to an item, when items change
-                    contentType = pagingItems.itemContentType { "FeedItem" },
-                ) { index ->
-                    val item = pagingItems[index] ?: return@items
+                    items = feedItems,
+                    contentType = { "FeedItem" }
+                ) { item ->
                     ListItem(
                         leadingContent = {
                             AsyncImage(
@@ -243,22 +223,10 @@ fun MainScreen(
                         },
                         modifier = Modifier
                             .animateItem()
-                            .clickable { onItemClick(item.id, isOnlyUnreadVisible) }
+                            .clickable { onItemClick(item.id, feedItems.map { it.id }) }
                     )
                     HorizontalDivider()
                 }
-
-                if (pagingItems.loadState.append == LoadState.Loading) {
-                    item(
-                        key = "LoadState.Loading",
-                        contentType = "LoadState.Loading",
-                    ) {
-                        CircularProgressIndicator(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .wrapContentWidth(Alignment.CenterHorizontally)
-                        )
-                    }
                 }
             }
         }

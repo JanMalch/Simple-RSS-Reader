@@ -2,14 +2,15 @@ package io.github.janmalch.simplerssreader.ui.screens.main
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.paging.cachedIn
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.janmalch.simplerssreader.core.FeedItemRepository
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
 import timber.log.Timber
@@ -27,9 +28,13 @@ class MainViewModel @Inject constructor(
     val isRefreshing = _isRefreshing.asStateFlow()
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val pagingItems = onlyUnread.flatMapLatest {
-        itemsRepository.paginateAll(onlyUnread = it)
-    }.cachedIn(viewModelScope)
+    val feedItems = onlyUnread.flatMapLatest {
+        itemsRepository.findAll(onlyUnread = it)
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = null,
+    )
 
     fun toggleOnlyUnread() {
         onlyUnread.value = !onlyUnread.value

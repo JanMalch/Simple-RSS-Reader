@@ -1,9 +1,5 @@
 package io.github.janmalch.simplerssreader.core
 
-import androidx.paging.Pager
-import androidx.paging.PagingConfig
-import androidx.paging.PagingData
-import androidx.paging.map
 import io.github.janmalch.simplerssreader.database.FeedItemDao
 import io.github.janmalch.simplerssreader.network.AtomFeed
 import io.github.janmalch.simplerssreader.network.RssFeed
@@ -22,19 +18,11 @@ import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.CoroutineContext
-import kotlin.uuid.Uuid
 
 interface FeedItemRepository {
-    fun paginateAll(
-        onlyUnread: Boolean = true,
-        source: Uuid? = null,
-        config: PagingConfig = PagingConfig(pageSize = 20)
-    ): Flow<PagingData<FeedItem>>
+    fun findAll(onlyUnread: Boolean = true): Flow<List<FeedItem>>
 
-    suspend fun findAll(
-        onlyUnread: Boolean = true,
-        source: Uuid? = null,
-    ): List<FeedItem>
+    suspend fun findAll(ids: List<FeedItemId>): List<FeedItem>
 
     suspend fun deleteAll()
     suspend fun update()
@@ -69,40 +57,19 @@ class AndroidFeedItemRepository @Inject constructor(
         dao.deleteAll()
     }
 
-    override suspend fun findAll(
-        onlyUnread: Boolean,
-        source: Uuid?,
-    ): List<FeedItem> {
-        val entities =
-            if (onlyUnread) {
-                if (source == null) dao.findUnread()
-                else dao.findUnread(source)
-            } else {
-                if (source == null) dao.findAll()
-                else dao.findAll(source)
-            }
-        return entities.map { it.toModel() }
-    }
+    override suspend fun findAll(ids: List<FeedItemId>): List<FeedItem> =
+        dao.findAll(ids)
+            .sortedBy { ids.indexOf(it.id) }
+            .map { it.toModel() }
 
-    override fun paginateAll(
-        onlyUnread: Boolean,
-        source: Uuid?,
-        config: PagingConfig
-    ): Flow<PagingData<FeedItem>> =
-        Pager(
-            config = config,
-        ) {
+    override fun findAll(onlyUnread: Boolean): Flow<List<FeedItem>> =
             if (onlyUnread) {
-                if (source == null) dao.paginateUnread()
-                else dao.paginateUnread(source)
+                dao.findUnread()
             } else {
-                if (source == null) dao.paginateAll()
-                else dao.paginateAll(source)
+                dao.findAll()
             }
-        }
-            .flow
-            .map { pagingData ->
-                pagingData.map { it.toModel() }
+                .map { list ->
+                    list.map { it.toModel() }
             }
 
     override suspend fun update(): Unit = crudMutex.withLock {
