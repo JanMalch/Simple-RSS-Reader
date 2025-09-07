@@ -51,6 +51,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
@@ -373,6 +374,7 @@ private fun ContentDisplay(
                 TextButton(
                     onClick = { uriHandler.openUri(content.url.toString()) },
                     modifier = Modifier.fillMaxWidth(),
+                    shape = RectangleShape,
                 ) {
                     Text(content.url.toString())
                 }
