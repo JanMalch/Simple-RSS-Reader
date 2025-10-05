@@ -1,0 +1,6 @@
+# Simple RSS Reader
+
+A simple RSS reader for Android.
+
+Icon created
+with [icon.kitchen](https://icon.kitchen/i/H4sIAAAAAAAAAzWQzU7EMAyE38Vce9jyI6ReEeKKxN4QQk7suBFpXZKUFVr13dfpai%2BJ82U8k%2FgMf5hWLjCcgTD%2FHEeeGIaAqXAHQV5SXDDXdl3YNiAOuKYKHUSvs4FcyndgJtg6cPIx4mL9UH7XmH1i0zk5%2Fu9MMlLkufU6ebsdzNlr0tyb4i4Edg%2FOBDu6vyLfH54N4SzmNzw%2BWVCQV5P6au%2BGMiLpyQRB3pEoztI8qy4w9IcOcpTRUlrptFadrnXisNPN3CalNbUZfFoIZY3UvqfF1hM7%2BNouixe1%2BiYBAAA%3D).

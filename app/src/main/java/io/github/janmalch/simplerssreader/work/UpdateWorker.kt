@@ -81,7 +81,7 @@ class UpdateWorker @AssistedInject constructor(
             PendingIntent.FLAG_IMMUTABLE
         )
         val builder = NotificationCompat.Builder(ctx, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_launcher_foreground) // FIXME
+            .setSmallIcon(R.mipmap.ic_launcher_foreground)
             .setContentTitle(ctx.getString(R.string.notification_title))
             .setContentText(ctx.getString(R.string.notification_text, unreadCount))
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
