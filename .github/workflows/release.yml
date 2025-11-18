@@ -1,17 +1,16 @@
 name: GitHub Release with APK
 
 on:
-  # TODO: change to push on 'v*' tags in the future
-  workflow_dispatch:
-    inputs:
-      version:
-        description: 'Application version'
-        required: true
+  push:
+    tags:
+      - 'v*'
 
 jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 120
+    permissions:
+      contents: write # allows the action to create a release
 
     steps:
       - name: Checkout
@@ -44,32 +43,20 @@ jobs:
 
       # TODO: include baseline profile generation
       - name: Build release variant APK
-        run: ./gradlew :app:assembleReleaseCi
+        run: ./gradlew :app:assembleRelease
         env:
           SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
           SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
           SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
 
       - name: Verify Signature
-        run: $ANDROID_SDK_ROOT/build-tools/35.0.0/apksigner verify --print-certs ./app/build/outputs/apk/releaseCi/app-releaseCi.apk
+        run: $ANDROID_SDK_ROOT/build-tools/35.0.0/apksigner verify --print-certs ./app/build/outputs/apk/release/app-release.apk
 
       - name: Create Release
+        uses: softprops/action-gh-release@v2
         id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.event.inputs.version }}
-          release_name: ${{ github.event.inputs.version }}
-          draft: true
+          draft: false
           prerelease: false
-
-      - name: Upload app
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: app/build/outputs/apk/releaseCi/app-releaseCi.apk
-          asset_name: simple_rss_reader_v${{ github.event.inputs.version }}.apk
-          asset_content_type: application/vnd.android.package-archive
+          files: |
+            app/build/outputs/apk/release/app-release.apk
