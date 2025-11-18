@@ -41,6 +41,20 @@ protobuf {
     }
 }
 
+// Updated by roar
+val vName = "0.0.1"
+
+// Compute versionCode based on versionName, by padding the segments in thousands groups,
+// allowing for up to 1000 patch versions per major/minor.
+// v0 will be codes less than 1_000_000.
+// https://pl.kotl.in/LUdtQtZh6
+val (vMajor, vMinor, vPatch) = vName
+    .split(".")
+    .map { s -> s.toInt(radix = 10).also { require(it < 1000) } }
+val vCode = "%d%03d%03d".format(vMajor, vMinor, vPatch)
+    .toInt(radix = 10)
+    .also { require(it < 2100000000) { "Exceeded greatest value for Google Play: $it" } }
+
 android {
     namespace = "io.github.janmalch.simplerssreader"
     compileSdk = 36
@@ -49,8 +63,8 @@ android {
         applicationId = "io.github.janmalch.simplerssreader"
         minSdk = 26
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        versionName = vName
+        versionCode = vCode
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
