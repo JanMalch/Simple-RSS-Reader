@@ -63,13 +63,13 @@ class AndroidFeedItemRepository @Inject constructor(
             .map { it.toModel() }
 
     override fun findAll(onlyUnread: Boolean): Flow<List<FeedItem>> =
-            if (onlyUnread) {
-                dao.findUnread()
-            } else {
-                dao.findAll()
-            }
-                .map { list ->
-                    list.map { it.toModel() }
+        if (onlyUnread) {
+            dao.findUnread()
+        } else {
+            dao.findAll()
+        }
+            .map { list ->
+                list.map { it.toModel() }
             }
 
     override suspend fun update(): Unit = crudMutex.withLock {
@@ -79,35 +79,46 @@ class AndroidFeedItemRepository @Inject constructor(
         }
         withContext(defaultDispatcher) {
             coroutineScope {
-                feeds.map {
+                val results = feeds.map {
                     async {
-                        update(it)
+                        try {
+                            Result.success(update(it))
+                        } catch (e: CancellationException) {
+                            throw e
+                        } catch (e: Exception) {
+                            Timber.tag(TAG)
+                                .w(e, "Error while updating feed '%s' from %s.", it.title, it.url)
+                            Result.failure(e)
+                        }
                     }
                 }.awaitAll()
+                if (results.all { it.isFailure }) {
+                    throw IllegalStateException(
+                        "All ${results.size} feed updates failed.",
+                        results.find { it.isFailure }?.exceptionOrNull()
+                    )
+                }
+                Timber.tag(TAG).i(
+                    "Updating feeds has finished with %d successful results and %d failures.",
+                    results.count { it.isSuccess },
+                    results.count { it.isFailure })
             }
         }
     }
 
     private suspend fun update(feed: Feed) {
         Timber.tag(TAG).i("Updating feed '%s' from %s.", feed.title, feed.url)
-        try {
-            val data = httpClient.getFeed(feed.url)
-            // TODO: update title?
-            val entities = when (data) {
-                is AtomFeed -> data.toEntities(feed.id)
-                is RssFeed -> data.toEntities(feed.id)
-            }
-            Timber.tag(TAG).i("Got %d items from feed '%s'.", entities.size, feed.title)
-            if (entities.isEmpty()) {
-                return
-            }
-            dao.insert(entities)
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: Exception) {
-            Timber.tag(TAG).e(e, "Error while updating feed '%s' from %s.", feed.title, feed.url)
-            throw e
+        val data = httpClient.getFeed(feed.url)
+        // TODO: update title?
+        val entities = when (data) {
+            is AtomFeed -> data.toEntities(feed.id)
+            is RssFeed -> data.toEntities(feed.id)
         }
+        Timber.tag(TAG).i("Got %d items from feed '%s'.", entities.size, feed.title)
+        if (entities.isEmpty()) {
+            return
+        }
+        dao.insert(entities)
     }
 
     override suspend fun markAsRead(id: List<FeedItemId>) {
