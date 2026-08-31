@@ -24,6 +24,7 @@
     <string name="delete_feed_confirm">Are you sure you want to delete \"%1$s\"? This cannot be undone.</string>
     <string name="back">Back</string>
     <string name="open_link">Open link</string>
+    <string name="mark_as_unread">Mark as unread</string>
     <string name="close">Close</string>
     <string name="published">Published</string>
     <string name="content_type">Content type</string>

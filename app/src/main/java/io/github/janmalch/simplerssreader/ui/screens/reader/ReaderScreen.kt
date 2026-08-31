@@ -26,6 +26,7 @@ import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Link
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Tag
+import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -46,6 +47,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -72,7 +74,10 @@ import io.github.janmalch.simplerssreader.R
 import io.github.janmalch.simplerssreader.core.FeedItem
 import io.github.janmalch.simplerssreader.core.FeedItemId
 import io.github.janmalch.simplerssreader.ui.SuppressLinks
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
+import timber.log.Timber
 import java.text.DateFormat
 
 @Serializable
@@ -144,15 +149,39 @@ fun ReaderScreen(
         floatingActionButton = {
             if (pagerState == null || uiState !is UiState.Success || uiState.items.isEmpty()) return@Scaffold
             val uriHandler = LocalUriHandler.current
-            val currentUrl =
-                uiState.items[pagerState.currentPage].url?.toString() ?: return@Scaffold
-            FloatingActionButton(onClick = {
-                uriHandler.openUri(currentUrl)
-            }) {
+            val currentItem = uiState.items[pagerState.currentPage]
+            val currentUrl = currentItem.url?.toString()
+            val scope = rememberCoroutineScope()
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                FloatingActionButton(onClick = {
+                    onMarkAsUnread(currentItem.id)
+                    if (pagerState.currentPage + 1 >= pagerState.pageCount) {
+                        onBack()
+                    } else {
+                        scope.launch(CoroutineExceptionHandler { _, throwable ->
+                            Timber.w(throwable, "Failed to animate to next page.")
+                        }) {
+                            pagerState.animateScrollToPage(pagerState.currentPage + 1)
+                        }
+                    }
+                }) {
+                    Icon(
+                        Icons.Outlined.Visibility,
+                        contentDescription = stringResource(R.string.mark_as_unread)
+                    )
+                }
+            FloatingActionButton(
+                onClick = {
+                    currentUrl?.also { uriHandler.openUri(it) }
+                },
+            ) {
                 Icon(
                     Icons.AutoMirrored.Outlined.OpenInNew,
                     contentDescription = stringResource(R.string.open_link)
                 )
+            }
             }
 
         }
