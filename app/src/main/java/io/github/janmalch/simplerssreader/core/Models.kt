@@ -152,6 +152,7 @@ fun RssFeed.toEntities(source: Uuid): List<FeedItemEntity> = channel.items.map {
             "link" -> FeedItemHint.Link
             "video" -> FeedItemHint.Video
             "text" -> FeedItemHint.Html
+            "youtube" -> FeedItemHint.YouTube
             else -> null
         },
         embed = it.ressitUrl?.href
